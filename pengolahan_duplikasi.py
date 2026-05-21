@@ -38,11 +38,23 @@ def normalize_alamat(value):
     return text
 
 def get_similarity_score(name1, name2):
-    """Hitung skor kemiripan antara dua nama menggunakan fuzzy matching"""
+    """Hitung skor kemiripan antara dua teks menggunakan fuzzy matching"""
+
+    if not name1 or not name2:
+        return 0
+
     token_set = rapidfuzz.fuzz.token_set_ratio(name1, name2)
     token_sort = rapidfuzz.fuzz.token_sort_ratio(name1, name2)
     partial = rapidfuzz.fuzz.partial_ratio(name1, name2)
-    return round((token_set + token_sort + partial) / 3, 2)
+    ratio = rapidfuzz.fuzz.ratio(name1, name2)
+
+    return round(
+        (token_set * 0.35) +
+        (token_sort * 0.25) +
+        (partial * 0.25) +
+        (ratio * 0.15),
+        2
+    )
 
 def remove_duplicates(df_base, similarity_threshold=90):
     """
@@ -59,12 +71,21 @@ def remove_duplicates(df_base, similarity_threshold=90):
     df_base['email_clean'] = df_base[BASE_EMAIL_COL].apply(normalize_email)
     df_base['nib_clean'] = df_base[BASE_NIB_COL].apply(normalize_nib)
 
+    # Gabungan nama + alamat
+    df_base['combined_clean'] = (
+        df_base['nama_clean'].fillna('') + ' ' +
+        df_base['alamat_clean'].fillna('')
+    ).str.strip()
+
     # Tandai baris yang akan dihapus dan track pasangannya
     indices_to_drop = set()
     duplicates_info = []
     names = df_base['nama_clean'].fillna('').tolist()
     addresses = df_base['alamat_clean'].fillna('').tolist()
-
+    combined_texts = df_base['combined_clean'].fillna('').tolist()
+    emails = df_base['email_clean'].fillna('').tolist()
+    nibs = df_base['nib_clean'].fillna('').tolist()
+    
     for i in range(len(df_base)):
         if i in indices_to_drop:
             continue
@@ -75,10 +96,42 @@ def remove_duplicates(df_base, similarity_threshold=90):
 
             name_similarity = get_similarity_score(names[i], names[j])
             address_similarity = get_similarity_score(addresses[i], addresses[j])
-            combined_similarity = (name_similarity + address_similarity) / 2
+            combined_text_similarity = get_similarity_score(
+                combined_texts[i],
+                combined_texts[j]
+            )
+
+            combined_similarity = (
+                name_similarity * 0.60 +
+                address_similarity * 0.25 +
+                combined_text_similarity * 0.15
+            )
+            combined_similarity = round(combined_similarity, 2)
 
             # Jika kemiripan >= threshold, tandai indeks j sebagai duplikasi dari i
-            if combined_similarity >= similarity_threshold:
+            email_match = emails[i] != '' and emails[i] == emails[j]
+            nib_match = nibs[i] != '' and nibs[i] == nibs[j]
+            is_name_address_duplicate = name_similarity >= 90 and address_similarity >= 75
+            is_similarity_duplicate = combined_similarity >= similarity_threshold
+
+            is_duplicate = (
+                is_similarity_duplicate
+                or email_match
+                or nib_match
+                or is_name_address_duplicate
+            )
+
+            duplicate_reasons = []
+            if is_similarity_duplicate:
+                duplicate_reasons.append('Skor kemiripan tinggi')
+            if email_match:
+                duplicate_reasons.append('Email sama')
+            if nib_match:
+                duplicate_reasons.append('NIB sama')
+            if is_name_address_duplicate:
+                duplicate_reasons.append('Nama dan alamat sangat mirip')
+
+            if is_duplicate:
                 indices_to_drop.add(j)
                 duplicates_info.append({
                     'baris_dihapus': j,
@@ -90,6 +143,14 @@ def remove_duplicates(df_base, similarity_threshold=90):
                     'email_dihapus': df_base.iloc[j][BASE_EMAIL_COL],
                     'email_referensi': df_base.iloc[i][BASE_EMAIL_COL],
                     'skor_kemiripan': combined_similarity,
+                    'nib_dihapus': df_base.iloc[j][BASE_NIB_COL],
+                    'nib_referensi': df_base.iloc[i][BASE_NIB_COL],
+                    'skor_nama': name_similarity,
+                    'skor_alamat': address_similarity,
+                    'skor_gabungan_teks': combined_text_similarity,
+                    'match_email': email_match,
+                    'match_nib': nib_match,
+                    'duplicate_reason': ', '.join(duplicate_reasons),
                 })
 
     # Simpan informasi duplikasi

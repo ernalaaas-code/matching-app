@@ -4,7 +4,7 @@ import streamlit as st
 from pengolahan_duplikasi import process_deduplication, BASE_NAMA_COL, BASE_EMAIL_COL, BASE_NIB_COL
 from pengolahan_matching import process_matching_file
 
-st.set_page_config(page_title='Monitoring App', page_icon='🎯', layout='wide')
+st.set_page_config(page_title='Monitoring App', page_icon='🎯', layout='centered')
 
 st.title('🎈 Monitoring App')
 st.write('Gunakan tombol di bawah untuk menjalankan proses monitoring. Berikut adalah tabel berisi daftar perusahaan yang sudah mengisi Form.')
@@ -25,7 +25,7 @@ if st.button('Mulai Pengecekan'):
                     df_display = df_duplicates_info[['baris_dihapus', 'baris_referensi', 'nama_dihapus', 'nama_referensi', 'skor_kemiripan']].copy()
                     df_display.columns = ['Baris Dihapus', 'Baris Referensi', 'Nama Dihapus', 'Nama Referensi', 'Skor (%)']
                     df_display.index = range(1, len(df_display) + 1)
-                    st.dataframe(df_display, height=400, use_container_width=True)
+                    st.dataframe(df_display, height=400)
 
             # Step 2: Matching
             st.info('🔗 Step 2: Melakukan matching...')
@@ -63,7 +63,7 @@ if st.button('Mulai Pengecekan'):
                 text=alt.Text('percentage:Q', format='.1f')
             )
 
-            st.altair_chart((pie_chart + label_chart).properties(height=400), use_container_width=True)
+            st.altair_chart((pie_chart + label_chart).properties(height=400), width='stretch')
 
             if matched_count > 0:
                 df_display = df_match[['target_nama', 'matched_email']].rename(

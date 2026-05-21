@@ -5,7 +5,7 @@ import streamlit as st
 from pengolahan_duplikasi import process_deduplication, BASE_NAMA_COL, BASE_EMAIL_COL, BASE_NIB_COL
 from pengolahan_matching import process_matching_file
 
-st.set_page_config(page_title='Monitoring App', page_icon='🎯', layout='wide')
+st.set_page_config(page_title='Ngibar App', page_icon='🎯', layout='wide')
 
 st.markdown(
     """

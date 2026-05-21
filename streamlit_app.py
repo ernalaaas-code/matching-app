@@ -6,6 +6,7 @@ from pengolahan_matching import process_matching_file
 
 st.set_page_config(page_title='Monitoring App', page_icon='🎯', layout='wide')
 
+
 st.markdown(
     """
     <style>
@@ -32,6 +33,7 @@ st.markdown(
 )
 
 st.title('🎈 Monitoring App')
+
 st.write('Gunakan tombol di bawah untuk menjalankan proses monitoring. Berikut adalah tabel berisi daftar perusahaan yang sudah mengisi Form.')
 st.write('Tip: untuk melihat tabel pada layar kecil, gunakan fitur geser horizontal di dalam tabel jika tersedia.')
 

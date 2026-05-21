@@ -7,10 +7,16 @@ BASE_NAMA_COL = 'data1'
 BASE_EMAIL_COL = 'email'
 BASE_NIB_COL = 'data6'
 
+
+def remove_parentheses(text):
+    text = str(text)
+    return re.sub(r'\s*\([^)]*\)\s*', ' ', text).strip()
+
 # Kolom tambahan untuk deduplication
 BASE_ALAMAT_COL = 'data2'
 
 def clean_nama(text):
+    text = remove_parentheses(text)
     text = str(text).lower()
     text = re.sub(r'[^a-z0-9 ]', ' ', text)
     text = re.sub(r'\s+', ' ', text).strip()

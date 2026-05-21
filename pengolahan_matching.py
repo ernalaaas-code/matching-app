@@ -8,12 +8,18 @@ BASE_EMAIL_COL = 'email'
 BASE_EMAIL_COL2= 'data4'
 BASE_NIB_COL = 'data6'
 
+
+def remove_parentheses(text):
+    text = str(text)
+    return re.sub(r'\s*\([^)]*\)\s*', ' ', text).strip()
+
 TARGET_NAMA_COL = 'Nama'
 TARGET_EMAIL_COL = 'email'
 TARGET_NIB_COL = 'NIB'
 
 
 def clean_nama(text):
+    text = remove_parentheses(text)
     text = str(text).lower()
     text = re.sub(r'[^a-z0-9 ]', ' ', text)
     text = re.sub(r'\s+', ' ', text).strip()
@@ -95,6 +101,7 @@ def prepare_dataframes(df_base, df_target):
 
     df_base['nib_clean'] = df_base[BASE_NIB_COL].apply(normalize_nib)
     df_base['email_clean'] = df_base[BASE_EMAIL_COL].apply(normalize_email)
+    df_base['email_clean2'] = df_base[BASE_EMAIL_COL2].apply(normalize_email)
 
     df_target['nib_clean'] = df_target[TARGET_NIB_COL].apply(normalize_nib)
     df_target['email_clean'] = df_target[TARGET_EMAIL_COL].apply(normalize_email)
@@ -117,6 +124,12 @@ def match_records(df_base, df_target, score_threshold=90):
         .set_index('email_clean')
     )
 
+    base_by_email2 = (
+        df_base[df_base['email_clean2'] != '']
+        .drop_duplicates('email_clean2')
+        .set_index('email_clean2')
+    )
+
     matches = []
 
     for target_idx, target_row in df_target.iterrows():
@@ -134,6 +147,11 @@ def match_records(df_base, df_target, score_threshold=90):
         if target_nib and target_nib in base_by_nib.index:
             match_idx = df_base.index[df_base['nib_clean'] == target_nib][0]
             match_method = 'NIB'
+            final_score = 100
+
+        elif target_email and target_email in base_by_email2.index:
+            match_idx = df_base.index[df_base['email_clean2'] == target_email][0]
+            match_method = 'email2'
             final_score = 100
 
         elif target_email and target_email in base_by_email.index:
@@ -163,6 +181,8 @@ def match_records(df_base, df_target, score_threshold=90):
             'matched_nama': base_row.get(BASE_NAMA_COL, ''),
             'matched_nib': base_row.get(BASE_NIB_COL, ''),
             'matched_email': base_row.get(BASE_EMAIL_COL, ''),
+            'matched_email2': base_row.get(BASE_EMAIL_COL2, ''),
+            # 'matched_email_used': base_row.get(BASE_EMAIL_COL2, '') if match_method == 'email2' else base_row.get(BASE_EMAIL_COL, ''),
             'token_set_score': token_set_score,
             'token_sort_score': token_sort_score,
             'partial_ratio_score': partial_ratio_score,

@@ -5,6 +5,7 @@ import rapidfuzz
 # Kolom yang dipakai untuk matching
 BASE_NAMA_COL = 'data1'
 BASE_EMAIL_COL = 'email'
+BASE_EMAIL_COL2= 'data4'
 BASE_NIB_COL = 'data6'
 
 TARGET_NAMA_COL = 'Nama'

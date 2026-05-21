@@ -101,7 +101,28 @@ st.markdown(
 
 excel_path = 'data/hasil_fasih_api dan target.xlsx'
 
-if st.button('Mulai Pengecekan'):
+if 'checked' not in st.session_state:
+    st.session_state.checked = False
+
+button_label = 'Ulang Pengecekan' if st.session_state.checked else 'Mulai Pengecekan'
+button_style = '#f6c300' if st.session_state.checked else '#ff8c00'
+button_text_color = '#0f172a' if st.session_state.checked else '#ffffff'
+
+st.markdown(
+    f"""
+    <style>
+        .stButton>button {{
+            background-color: {button_style} !important;
+            color: {button_text_color} !important;
+            border: none !important;
+            box-shadow: none !important;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+if st.button(button_label, key='recheck_button', on_click=lambda: st.session_state.update({'checked': True})):
     with st.spinner('Memproses data usaha...'):
         try:
             # Step 1: Deduplication

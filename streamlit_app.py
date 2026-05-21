@@ -1,4 +1,5 @@
 import altair as alt
+import base64
 import pandas as pd
 import streamlit as st
 from pengolahan_duplikasi import process_deduplication, BASE_NAMA_COL, BASE_EMAIL_COL, BASE_NIB_COL
@@ -6,10 +7,58 @@ from pengolahan_matching import process_matching_file
 
 st.set_page_config(page_title='Monitoring App', page_icon='🎯', layout='wide')
 
-
 st.markdown(
     """
     <style>
+        .stApp {
+            background: #f5f7fb;
+            color: #0f172a;
+        }
+        .stButton>button {
+            border-radius: 0.75rem;
+            padding: 0.85rem 1.25rem;
+            font-weight: 600;
+        }
+        .stAlert {
+            border-radius: 1rem;
+        }
+        .stDataFrame div[role='grid'] {
+            width: 100% !important;
+        }
+        .streamlit-expanderHeader {
+            font-size: 1rem;
+        }
+        .page-title {
+            text-align: center;
+            margin: 1.25rem auto 0.5rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+        .page-subtitle {
+            text-align: center;
+            margin: 0.25rem auto 1.5rem;
+            color: #475569;
+            font-size: 1rem;
+            max-width: 720px;
+        }
+        .header-image {
+            width: 100%;
+            max-width: 1200px;
+            display: block;
+            margin: 0 auto 1.5rem;
+            height: auto;
+            border-radius: 1rem;
+        }
+        .header-description {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+            margin: auto auto 1.5rem;
+            max-width: 1200px;
+        }
         @media (max-width: 760px) {
             .stApp {
                 padding-left: 0.75rem;
@@ -20,22 +69,35 @@ st.markdown(
                 min-height: 3rem;
                 font-size: 1rem;
             }
-            .stDataFrame div[role='grid'] {
-                width: 100% !important;
-            }
-            .streamlit-expanderHeader {
-                font-size: 1rem;
-            }
         }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title('🎈 Monitoring App')
+st.markdown('<div class="page-title">Monitoring Progres Ngibar 3600</div>', unsafe_allow_html=True)
+# st.markdown('<div class="page-subtitle">Gunakan tombol di bawah untuk menjalankan proses monitoring. Berikut adalah tabel berisi daftar perusahaan yang sudah mengisi Form.</div>', unsafe_allow_html=True)
 
-st.write('Gunakan tombol di bawah untuk menjalankan proses monitoring. Berikut adalah tabel berisi daftar perusahaan yang sudah mengisi Form.')
-st.write('Tip: untuk melihat tabel pada layar kecil, gunakan fitur geser horizontal di dalam tabel jika tersedia.')
+header_path = 'data/header.png'
+with open(header_path, 'rb') as header_file:
+    header_base64 = base64.b64encode(header_file.read()).decode('utf-8')
+
+st.markdown(
+    f"""
+    <img src="data:image/png;base64,{header_base64}" style="width:100%; max-width:100%; height:auto; border-radius:1rem; margin-bottom:1.25rem;" />
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    """
+    <div class='header-description'>
+        <p style='margin: 0; font-size: 1.05rem;'>Gunakan tombol di bawah untuk menjalankan proses monitoring. Berikut adalah tabel berisi daftar perusahaan yang sudah mengisi Form.</p>
+        <p style='margin: 0.5rem 0 0 0; color: #334155;'>Tip: untuk melihat tabel pada layar kecil, gunakan fitur geser horizontal di dalam tabel jika tersedia.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 excel_path = 'data/hasil_fasih_api dan target.xlsx'
 
